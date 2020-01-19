@@ -50,32 +50,40 @@ class Sequence():
         curr_player = players[turn]
 
         while not winner:
-            curr_player.show_cards()
-            choice = input("Player {}, what's your move?".format(turn))
-            while not choice.isdigit() or int(choice) < 0 or int(choice) > 6:
-                choice = input("Invalid move, choose number 0 - {}".format(
-                    len(curr_player.cards)))
-            
-            choice = int(choice)
-            card = curr_player.get_card(choice)
+            accepted = False
 
-            # TODO: Deal with unmakeable moves
-            moves = self.board.get_moves(card)
-            
-            curr_player.show_moves(moves)
-            choice = input("Player {}, which move?".format(turn))
-            while not choice.isdigit() or int(choice) < 0 or int(choice) >= len(moves):
-                choice = input("Choose a number 0 through {}".format(len(moves)-1))
+            while not accepted:
+                curr_player.show_cards()
+                choice = input("Player {}, what's your move?".format(turn))
+                while not choice.isdigit() or int(choice) < 0 or int(choice) > 6:
+                    choice = input("Invalid move, choose number 0 - {}".format(
+                        len(curr_player.cards)))
+                
+                choice = int(choice)
+                card = curr_player.get_card(choice)
 
-            self.board.make_move(moves[int(choice)], curr_player.marker)
+                isOneEyed, moves = self.board.get_moves(card, curr_player.marker)
+                if len(moves) == 0:
+                    print(" No moves available, try another")
+                    curr_player.add_card(card)
+                    continue
+                
+                curr_player.show_moves(moves)
+                choice = input("Player {}, which move?".format(turn))
+                while not choice.isdigit() or int(choice) < 0 or int(choice) >= len(moves):
+                    choice = input("Choose a number 0 through {}".format(len(moves)-1))
 
-            curr_player.add_card(self.deck.draw())
-            
-            turn = (turn + 1) % 2
-            curr_player = players[turn]
-            print()
-            print(self.board.board)
-            print()
+                self.board.make_move(moves[int(choice)], curr_player.marker, isOneEyed)
+
+                curr_player.add_card(self.deck.draw())
+                
+                turn = (turn + 1) % 2
+                curr_player = players[turn]
+                print()
+                print(self.board.board)
+                print()
+
+                accepted = True
 
 if __name__ == '__main__':
     sequence = Sequence()

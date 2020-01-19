@@ -12,6 +12,7 @@ class Board(object):
         self.player1_streaks = []
         self.player2_streaks = []
         self.moves = self.build()
+        self.one_eyed_jacks, self.two_eye_jacks = self.create_jacks()
         self.check_board()
         self.reset()
 
@@ -82,6 +83,16 @@ class Board(object):
         moves[Card(Rank.SIX, Suite.CLUBS)] = [(6, 7), (8, 9)]
     
         return moves
+    
+    def create_jacks(self):
+        one_eyed_jacks = [Card(Rank.JACK, Suite.DIAMONDS),
+                           Card(Rank.JACK, Suite.HEARTS)]
+
+        two_eyed_jacks = [Card(Rank.JACK, Suite.SPADES),
+                          Card(Rank.JACK, Suite.CLUBS)]
+
+        return one_eyed_jacks, two_eyed_jacks
+
 
     def reset(self):
         self.board[:] = Player.NONE.value
@@ -107,21 +118,35 @@ class Board(object):
             indices = np.where(empty_board != 1)
             raise ValueError("Indices {} were not set".format(indices))
     
-    def get_moves(self, card):
+
+    def get_moves(self, card, marker):
         
         # Check for jokers: TODO
+        isOneEyed, isjack = card.isjack()
+
+        if isjack:
+            if isOneEyed:
+                indices = np.where((self.board != Player.NONE.value) & (self.board != Player.EITHER.value))
+            else:
+                indices = np.where(self.board == Player.NONE.value)
+            return isOneEyed, list(zip(indices[0], indices[1]))
+
+        else:
         
-        positions = self.moves[card]
-        moves = []
-        for pos in positions:
-            if self.board[pos] == 0:
-                moves.append(pos)
+            positions = self.moves[card]
+            moves = []
+            for pos in positions:
+                if self.board[pos] == 0:
+                    moves.append(pos)
 
-        return moves
+        return isOneEyed, moves
 
-    def make_move(self, move, marker):
-        assert(self.board[move] == 0)
-        self.board[move] = marker
+    def make_move(self, move, marker, oneEyed):
+        if oneEyed:
+            self.board[move] = 0
+        else:
+            assert(self.board[move] == 0)
+            self.board[move] = marker
 
 class Player(Enum):
     NONE = 0
@@ -168,6 +193,14 @@ class Card(object):
     def __init__(self, rank: Rank, suite: Suite):
         self.rank = rank
         self.suite = suite
+    
+    def isjack(self):
+        if self.rank == Rank.JACK:
+            if self.suite == Suite.DIAMONDS or self.suite == Suite.HEARTS:
+                return True, True
+            return False, True
+        
+        return False, False
 
     def __hash__(self):
         return hash(str(self.rank) + str(self.suite))
