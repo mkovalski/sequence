@@ -40,21 +40,44 @@ class Board(object):
         moves[Card(Rank.ACE, Suite.CLUBS)] = [(1, 9), (2, 4)]
 
         # Row 2
-        moves[Card(Rank.FOUR, Suite.DIAMONDS)] = [(2, 2), (7, 5)]
+        moves[Card(Rank.FOUR, Suite.DIAMONDS)] = [(2, 0), (7, 5)]
         moves[Card(Rank.FOUR, Suite.HEARTS)] = [(2, 1), (5, 4)]
         moves[Card(Rank.KING, Suite.CLUBS)] = [(2, 5), (2, 9)]
         moves[Card(Rank.QUEEN, Suite.CLUBS)] = [(2, 6), (3, 9)]
         moves[Card(Rank.TEN, Suite.CLUBS)] = [(2, 7), (3, 9)]
         moves[Card(Rank.EIGHT, Suite.SPADES)] = [(2, 8), (9, 2)]
+    
+        # Row 3
+        moves[Card(Rank.THREE, Suite.DIAMONDS)] = [(3, 0), (7, 6)]
+        moves[Card(Rank.FIVE, Suite.HEARTS)] = [(3, 1), (5, 5)]
+        moves[Card(Rank.QUEEN, Suite.HEARTS)] = [(3, 3), (8, 2)]
+        moves[Card(Rank.TEN, Suite.HEARTS)] = [(3, 4), (8, 1)]
+        moves[Card(Rank.NINE, Suite.HEARTS)] = [(3, 5), (7, 1)]
+        moves[Card(Rank.EIGHT, Suite.HEARTS)] = [(3, 6), (6, 1)]
+        moves[Card(Rank.NINE, Suite.CLUBS)] = [(3, 7), (5, 9)]
+        moves[Card(Rank.NINE, Suite.SPADES)] = [(3, 8), (9, 1)]
 
+        # Row 4
+        moves[Card(Rank.TWO, Suite.DIAMONDS)] = [(4, 0), (7, 7)]
+        moves[Card(Rank.SIX, Suite.HEARTS)] = [(4, 1), (5, 6)]
+        moves[Card(Rank.KING, Suite.HEARTS)] = [(4, 3), (8, 3)]
+        moves[Card(Rank.SEVEN, Suite.HEARTS)] = [(4, 6), (5, 1)]
+        moves[Card(Rank.EIGHT, Suite.CLUBS)] = [(4, 7), (6, 9)]
+        moves[Card(Rank.TEN, Suite.SPADES)] = [(4, 8), (8, 0)]
 
+        # Row 5
+        moves[Card(Rank.ACE, Suite.SPADES)] = [(5, 0), (7, 8)]
+        moves[Card(Rank.ACE, Suite.HEARTS)] = [(5, 3), (8, 4)]
+        moves[Card(Rank.SEVEN, Suite.CLUBS)] = [(5, 7), (7, 9)]
+        moves[Card(Rank.QUEEN, Suite.SPADES)] = [(5, 8), (7, 0)]
 
-
-        
-
-
-
-
+        # Row 6
+        moves[Card(Rank.KING, Suite.SPADES)] = [(6, 0), (6, 8)]
+        moves[Card(Rank.TWO, Suite.CLUBS)] = [(6, 3), (8, 5)]
+        moves[Card(Rank.THREE, Suite.CLUBS)] = [(6, 4), (8, 6)]
+        moves[Card(Rank.FOUR, Suite.CLUBS)] = [(6, 5), (8, 7)]
+        moves[Card(Rank.FIVE, Suite.CLUBS)] = [(6, 6), (8, 8)]
+        moves[Card(Rank.SIX, Suite.CLUBS)] = [(6, 7), (8, 9)]
     
     def reset(self)
         self.board[:] = PLAYER.NONE
