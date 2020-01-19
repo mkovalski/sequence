@@ -93,13 +93,14 @@ class Board(object):
 
         return one_eyed_jacks, two_eyed_jacks
 
-
     def reset(self):
         self.board[:] = Player.NONE.value
         self.board[0, 0] = Player.EITHER.value
         self.board[0, -1] = Player.EITHER.value
         self.board[-1, 0] = Player.EITHER.value
         self.board[-1, -1] = Player.EITHER.value
+
+        self.locked = {}
     
     def check_board(self):
         empty_board = np.zeros((10, 10))
@@ -117,7 +118,6 @@ class Board(object):
         if len(uniq) != 1:
             indices = np.where(empty_board != 1)
             raise ValueError("Indices {} were not set".format(indices))
-    
 
     def get_moves(self, card, marker):
         
@@ -126,7 +126,7 @@ class Board(object):
 
         if isjack:
             if isOneEyed:
-                indices = np.where((self.board != Player.NONE.value) & (self.board != Player.EITHER.value))
+                indices = np.where((self.board != Player.NONE.value) & (self.board != Player.EITHER.value) & (self.board > 0))
             else:
                 indices = np.where(self.board == Player.NONE.value)
             return isOneEyed, list(zip(indices[0], indices[1]))
@@ -136,21 +136,115 @@ class Board(object):
             positions = self.moves[card]
             moves = []
             for pos in positions:
-                if self.board[pos] == 0:
+                if self.board[pos] == Player.NONE.value:
                     moves.append(pos)
 
         return isOneEyed, moves
 
     def make_move(self, move, marker, oneEyed):
         if oneEyed:
-            self.board[move] = 0
+            self.board[move] = Player.NONE.value
         else:
-            assert(self.board[move] == 0)
+            assert(self.board[move] == Player.NONE.value)
             self.board[move] = marker
+    
+    def check_row(self, idx, marker, lines):
+        i, j = idx
+        streak = 0
+        x = []
+        y = []
+
+        while i < self.board.shape[0] and streak < 5:
+            if self.board[i, j] in [marker, -marker, Player.EITHER.value]:
+                if self.board[i, j] != Player.EITHER.value:
+                    x.append(i)
+                    y.append(j)
+
+                streak += 1
+            else:
+                return None, False
+            i+=1 
+        
+        # If there's a streak, update the board and return result
+        if streak == 5:
+            indices = (idx, (i, j))
+            if indices not in lines:
+                self.board[np.ix_(x, y)] *= -1
+                return indices, True
+
+        return None, False
+    
+    def check_col(self, idx, marker, lines):
+        i, j = idx
+        streak = 0
+        x = []
+        y = []
+
+        while j < self.board.shape[1] and streak < 5:
+            if self.board[i, j] in [marker, -marker, Player.EITHER.value]:
+                if self.board[i, j] != Player.EITHER.value:
+                    x.append(i)
+                    y.append(j)
+
+                streak += 1
+            else:
+                return None, False
+            j+=1 
+        
+        # If there's a streak, update the board and return result
+        if streak == 5:
+            indices = (idx, (i, j))
+            if indices not in lines:
+                self.board[np.ix_(x, y)] *= -1
+                return indices, True
+
+        return None, False
+    
+    def check_diag(self, idx, marker, lines):
+        i, j = idx
+        streak = 0
+        x = []
+        y = []
+
+        while i < self.board.shape[0] and j < self.board.shape[1] and streak < 5:
+            if self.board[i, j] in [marker, -marker, Player.EITHER.value]:
+                if self.board[i, j] != Player.EITHER.value:
+                    x.append(i)
+                    y.append(j)
+
+                streak += 1
+            else:
+                return None, False
+            i+=1
+            j+=1
+        
+        # If there's a streak, update the board and return result
+        if streak == 5:
+            indices = (idx, (i, j))
+            if indices not in lines:
+                self.board[np.ix_(x, y)] *= -1
+                return indices, True
+
+        return None, False
+
+    def update_score(self, marker, lines):
+        # TODO: Already marked lines in counting for new line
+        # TODO: Smarter caching
+        for i in range(0, self.board.shape[0]):
+            for j in range(0, self.board.shape[1]):
+                for check in [self.check_row, self.check_col, self.check_diag]:
+                    indices, found = check((i, j), marker, lines)
+                    if found:
+                        lines.append(indices)
+                        print(" - Found a line at {}".format(indices))
+                        if len(lines) >=2:
+                            return True
+
+        return False                          
 
 class Player(Enum):
     NONE = 0
-    EITHER = -1
+    EITHER = 255
 
 class Rank(Enum):
     TWO = 2
@@ -179,8 +273,9 @@ class Deck(object):
 
     def reset(self):
         self.cards = []
-        for item in itertools.product([x for x in Rank], [x for x in Suite]):
-            self.cards.append(Card(item[0], item[1]))
+        for i in range(2):
+            for item in itertools.product([x for x in Rank], [x for x in Suite]):
+                self.cards.append(Card(item[0], item[1]))
 
         np.random.shuffle(self.cards)
     
