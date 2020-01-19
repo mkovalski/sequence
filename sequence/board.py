@@ -8,7 +8,7 @@ class Board(object):
     CORNERS = [(0, 0), (0, -1), (-1, 0), (-1, -1)]
 
     def __init__(self):
-        self.board = np.zeros((10, 10), dtype = Player)
+        self.board = np.zeros((10, 10), dtype = np.int)
         self.player1_streaks = []
         self.player2_streaks = []
         self.moves = self.build()
@@ -84,11 +84,11 @@ class Board(object):
         return moves
 
     def reset(self):
-        self.board[:] = Player.NONE
-        self.board[0, 0] = Player.EITHER
-        self.board[0, -1] = Player.EITHER
-        self.board[-1, 0] = Player.EITHER
-        self.board[-1, -1] = Player.EITHER
+        self.board[:] = Player.NONE.value
+        self.board[0, 0] = Player.EITHER.value
+        self.board[0, -1] = Player.EITHER.value
+        self.board[-1, 0] = Player.EITHER.value
+        self.board[-1, -1] = Player.EITHER.value
     
     def check_board(self):
         empty_board = np.zeros((10, 10))
@@ -107,11 +107,25 @@ class Board(object):
             indices = np.where(empty_board != 1)
             raise ValueError("Indices {} were not set".format(indices))
     
+    def get_moves(self, card):
+        
+        # Check for jokers: TODO
+        
+        positions = self.moves[card]
+        moves = []
+        for pos in positions:
+            if self.board[pos] == 0:
+                moves.append(pos)
+
+        return moves
+
+    def make_move(self, move, marker):
+        assert(self.board[move] == 0)
+        self.board[move] = marker
+
 class Player(Enum):
     NONE = 0
-    PLAYER1 = 1
-    PLAYER2 = 2
-    EITHER = 3
+    EITHER = -1
 
 class Rank(Enum):
     TWO = 2
@@ -134,6 +148,21 @@ class Suite(Enum):
     SPADES = 3
     CLUBS = 4
 
+class Deck(object):
+    def __init__(self):
+        self.reset()
+
+    def reset(self):
+        self.cards = []
+        for item in itertools.product([x for x in Rank], [x for x in Suite]):
+            self.cards.append(Card(item[0], item[1]))
+
+        np.random.shuffle(self.cards)
+    
+    def draw(self):
+        if len(self.cards) > 0:
+            return self.cards.pop()
+        return None
 
 class Card(object):
     def __init__(self, rank: Rank, suite: Suite):
@@ -144,7 +173,10 @@ class Card(object):
         return hash(str(self.rank) + str(self.suite))
 
     def __str__(self):
-        return str(self.rank) + ' of ' + str(self.suite)
+        return str(self.rank.name) + ' of ' + str(self.suite.name)
+
+    def __eq__(self, other):
+        return self.rank == other.rank and self.suite == other.suite
 
 if __name__ == '__main__':
     board = Board() 
