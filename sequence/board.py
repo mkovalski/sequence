@@ -5,13 +5,15 @@ from enum import Enum
 import itertools
 
 class Board(object):
+    CORNERS = [(0, 0), (0, -1), (-1, 0), (-1, -1)]
+
     def __init__(self):
-        self.board = np.zeros((10, 10), dtype = PLAYER)
+        self.board = np.zeros((10, 10), dtype = Player)
         self.player1_streaks = []
         self.player2_streaks = []
         self.moves = self.build()
+        self.check_board()
         self.reset()
-    
 
     def build(self):
         # This logic is a bit wild but I kind of need to hard code this in
@@ -44,7 +46,7 @@ class Board(object):
         moves[Card(Rank.FOUR, Suite.HEARTS)] = [(2, 1), (5, 4)]
         moves[Card(Rank.KING, Suite.CLUBS)] = [(2, 5), (2, 9)]
         moves[Card(Rank.QUEEN, Suite.CLUBS)] = [(2, 6), (3, 9)]
-        moves[Card(Rank.TEN, Suite.CLUBS)] = [(2, 7), (3, 9)]
+        moves[Card(Rank.TEN, Suite.CLUBS)] = [(2, 7), (4, 9)]
         moves[Card(Rank.EIGHT, Suite.SPADES)] = [(2, 8), (9, 2)]
     
         # Row 3
@@ -79,13 +81,32 @@ class Board(object):
         moves[Card(Rank.FIVE, Suite.CLUBS)] = [(6, 6), (8, 8)]
         moves[Card(Rank.SIX, Suite.CLUBS)] = [(6, 7), (8, 9)]
     
-    def reset(self)
-        self.board[:] = PLAYER.NONE
-        self.board[0, 0] = PLAYER.EITHER
-        self.board[0, -1] = PLAYER.EITHER
-        self.board[-1, 0] = PLAYER.EITHER
-        self.board[-1, -1] = PLAYER.EITHER
+        return moves
 
+    def reset(self):
+        self.board[:] = Player.NONE
+        self.board[0, 0] = Player.EITHER
+        self.board[0, -1] = Player.EITHER
+        self.board[-1, 0] = Player.EITHER
+        self.board[-1, -1] = Player.EITHER
+    
+    def check_board(self):
+        empty_board = np.zeros((10, 10))
+        # TODO: corn
+        for corn in self.CORNERS:
+            empty_board[corn] = 1
+
+        for key, values in self.moves.items():
+            for position in values:
+                assert(empty_board[position] == 0), \
+                    'Tried to set {} at {}, but already set'.format(str(key), position)
+                empty_board[position] = 1
+        
+        uniq = np.unique(empty_board)
+        if len(uniq) != 1:
+            indices = np.where(empty_board != 1)
+            raise ValueError("Indices {} were not set".format(indices))
+    
 class Player(Enum):
     NONE = 0
     PLAYER1 = 1
@@ -121,3 +142,9 @@ class Card(object):
 
     def __hash__(self):
         return hash(str(self.rank) + str(self.suite))
+
+    def __str__(self):
+        return str(self.rank) + ' of ' + str(self.suite)
+
+if __name__ == '__main__':
+    board = Board() 
