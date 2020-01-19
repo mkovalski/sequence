@@ -3,6 +3,7 @@
 import numpy as np
 import sys
 from board import Board, Deck
+from utils import printok, printwarn
 
 class Player(object):
     def __init__(self, cards, marker):
@@ -24,7 +25,7 @@ class Player(object):
             print("Move {}: {}".format(idx, mv))
 
     def add_card(self, card, idx = None):
-        if not idx:
+        if idx is None:
             self.cards.append(card)
         else:
             self.cards.insert(idx, card)
@@ -65,9 +66,9 @@ class Sequence():
                 print()
 
                 curr_player.show_cards()
-                move_choice = input("Player {}, what's your move?".format(turn+1))
+                move_choice = input("Player {}, what's your move?\n".format(turn+1))
                 while not move_choice.isdigit() or int(move_choice) < 0 or int(move_choice) > 6:
-                    move_choice = input("Invalid move, choose number 0 - {}".format(
+                    move_choice = input("Invalid move, choose number 0 - {}\n".format(
                         len(curr_player.cards)))
                 
                 move_choice = int(move_choice)
@@ -75,15 +76,15 @@ class Sequence():
 
                 isOneEyed, moves = self.board.get_moves(card, curr_player.marker)
                 if len(moves) == 0:
-                    print(" No moves available, try another")
+                    printwarn(" No moves available, try another")
                     curr_player.add_card(card, idx = move_choice)
                     continue
 
                 curr_player.show_moves(moves)
-                choice = input("Player {}, which move? Enter 0 through {}, or type 'b' for back".format(turn + 1, len(moves)))
+                choice = input("Player {}, which move? Enter 0 through {}, or type 'b' for back\n".format(turn + 1, len(moves)))
 
                 while not (choice.isdigit() and int(choice) >= 0 and  int(choice) < len(moves)) and choice != 'b':
-                    choice = input("Choose a number 0 through {}, or type 'b' for back".format(len(moves)-1))
+                    choice = input("Choose a number 0 through {}, or type 'b' for back\n".format(len(moves)-1))
 
                 if not choice.isdigit() and choice == 'b':
                     curr_player.add_card(card, idx = move_choice)
@@ -92,7 +93,7 @@ class Sequence():
                 self.board.make_move(moves[int(choice)], curr_player.marker, isOneEyed)
                 have_winner = self.board.update_score(curr_player.marker, curr_player.lines)
                 if have_winner:
-                    print("Player {} wins!".format(turn))
+                    printok("Player {} wins!".format(turn+1))
                     winner = True
 
                 curr_player.add_card(self.deck.draw())
@@ -101,6 +102,10 @@ class Sequence():
                 curr_player = players[turn]
 
                 accepted = True
+        
+        print()
+        print(self.board.board)
+        print()
 
 if __name__ == '__main__':
     sequence = Sequence()

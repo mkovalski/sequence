@@ -3,6 +3,7 @@
 import numpy as np
 from enum import Enum
 import itertools
+from utils import printok, printwarn
 
 class Board(object):
     CORNERS = [(0, 0), (0, -1), (-1, 0), (-1, -1)]
@@ -167,7 +168,7 @@ class Board(object):
         
         # If there's a streak, update the board and return result
         if streak == 5:
-            indices = (idx, (i, j))
+            indices = (idx, (i-1, j))
             if indices not in lines:
                 self.board[np.ix_(x, y)] *= -1
                 return indices, True
@@ -193,14 +194,14 @@ class Board(object):
         
         # If there's a streak, update the board and return result
         if streak == 5:
-            indices = (idx, (i, j))
+            indices = (idx, (i, j-1))
             if indices not in lines:
                 self.board[np.ix_(x, y)] *= -1
                 return indices, True
 
         return None, False
     
-    def check_diag(self, idx, marker, lines):
+    def check_diag_right(self, idx, marker, lines):
         i, j = idx
         streak = 0
         x = []
@@ -220,7 +221,34 @@ class Board(object):
         
         # If there's a streak, update the board and return result
         if streak == 5:
-            indices = (idx, (i, j))
+            indices = (idx, (i-1, j-1))
+            if indices not in lines:
+                self.board[np.ix_(x, y)] *= -1
+                return indices, True
+
+        return None, False
+    
+    def check_diag_left(self, idx, marker, lines):
+        i, j = idx
+        streak = 0
+        x = []
+        y = []
+
+        while i >= 0 and j < self.board.shape[1] and streak < 5:
+            if self.board[i, j] in [marker, -marker, Player.EITHER.value]:
+                if self.board[i, j] != Player.EITHER.value:
+                    x.append(i)
+                    y.append(j)
+
+                streak += 1
+            else:
+                return None, False
+            i-=1
+            j+=1
+        
+        # If there's a streak, update the board and return result
+        if streak == 5:
+            indices = (idx, (i+1, j-1))
             if indices not in lines:
                 self.board[np.ix_(x, y)] *= -1
                 return indices, True
@@ -232,11 +260,11 @@ class Board(object):
         # TODO: Smarter caching
         for i in range(0, self.board.shape[0]):
             for j in range(0, self.board.shape[1]):
-                for check in [self.check_row, self.check_col, self.check_diag]:
+                for check in [self.check_row, self.check_col, self.check_diag_right, self.check_diag_left]:
                     indices, found = check((i, j), marker, lines)
                     if found:
                         lines.append(indices)
-                        print(" - Found a line at {}".format(indices))
+                        printok(" - Found a line at {}".format(indices))
                         if len(lines) >=2:
                             return True
 
