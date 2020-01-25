@@ -10,7 +10,7 @@ class Board {
         Board();
         void reset();
         void show();
-        void play(int, int, int);
+        void play(int, int, int, bool);
         bool won(int);
 
     private:
@@ -21,6 +21,7 @@ class Board {
         bool check_col(int, int, int);
         bool check_diag_right(int, int, int);
         bool check_diag_left(int, int, int);
+        bool corner(int, int);
 };
 
 

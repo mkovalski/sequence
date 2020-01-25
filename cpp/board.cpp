@@ -37,13 +37,27 @@ void Board::show() {
     }
 }
 
-void Board::play(int marker, int row, int col) {
+bool Board::corner(int row, int col) {
+    if ((row == 0 && col == 0) ||
+        (row == 0 && col == width - 1) ||
+        (row == height -1  && col == 0) ||
+        (row == height - 1 && col == height - 1)) 
+        return true;
+    return false;
+}
+
+void Board::play(int marker, int row, int col, bool remove) {
     if (cache.count(marker) == 0) {
         std::cout << "No such marker!" << std::endl;
     }
-
-    if (board[row][col] == 0)
-        board[row][col] = marker;
+    
+    if (remove && !corner(row, col)) {
+        board[row][col] = 0;
+    } else {
+        if (board[row][col] == 0) {
+            board[row][col] = marker;
+        }
+    }
 }
 
 bool Board::check_row(int marker, int row, int col) {
