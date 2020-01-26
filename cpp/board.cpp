@@ -26,6 +26,9 @@ void Board::reset() {
         cache[element.first].clear();
     }
 
+    haveWon = false;
+    winner = 0;
+
 }
 
 void Board::show() {
@@ -162,20 +165,26 @@ bool Board::check(int marker, int row, int col) {
     bool found_right = check_diag_right(marker, row, col);
     bool found_left = check_diag_left(marker, row, col);
 
-    return true;
+    return (found_row || found_col || found_right || found_left);
 }
 
 bool Board::won(int marker) {
+    bool found;
     for (int i = 0; i < height; ++i) {
         for (int j = 0; j < width; ++j) {
-            bool won = check(marker, i, j);
+            found = check(marker, i, j);
         }
     }
 
-    if (cache[marker].size() >= 2)
+    if (found) {
+        std::cout << "Ooh ya got one player " << marker << std::endl;
+    }
+
+    if (cache[marker].size() >= 2) {
+        haveWon = true;
+        winner = marker;
         return true;
+    }
 
     return false;
 }
-
-
