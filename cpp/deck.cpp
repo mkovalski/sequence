@@ -29,6 +29,10 @@ bool Card::isTwoEyedJack() {
     return twoeyedjack;
 }
 
+std::ostream& operator<<(std::ostream &strm, const Card &card) {
+    return strm << FaceMap.at(card.face) << " of " << SuiteMap.at(card.suite);
+}
+
 Deck::Deck() {
     reset();
 }
@@ -37,7 +41,9 @@ void Deck::reset() {
     cards.clear();
     for (const auto& suite: Suites) {
         for (const auto& face: Faces) {
-            cards.push_back(Card(suite, face));
+            for (int i = 0; i < 2; ++i) {
+                cards.push_back(Card(suite, face));
+            }
         }
     }
     std::random_shuffle(cards.begin(), cards.end());

@@ -3,6 +3,9 @@
 #include <vector>
 #include "deck.h"
 
+#ifndef BOARD
+#define BOARD
+
 class Board {
     static const int width = 10;
     static const int height = 10;
@@ -61,13 +64,18 @@ class Board {
         Board();
         void reset();
         void show();
+        void show(int[height][width]);
         void play(int, int, int, bool);
-        bool won(int);
+        void getOpenSlots(std::vector<std::pair<int, int>> &vect);
+        void getTakenSlots(std::vector<std::pair<int, int>> &vect);
+        const std::vector<std::pair<int, int>>& getMoves(Card, std::vector<std::pair<int, int>> &vect);
+        bool isDone();
+        int getWinner();
 
     private:
         int board[width][height];
         int winner;
-        bool haveWon;
+        bool done;
 
         std::map<int, std::vector<std::pair<std::pair<int, int>, std::pair<int, int>>>> cache;
         bool check(int, int, int);
@@ -76,6 +84,8 @@ class Board {
         bool check_diag_right(int, int, int);
         bool check_diag_left(int, int, int);
         bool corner(int, int);
+        bool check_board();
+        void update(int);
 };
 
-
+#endif //BOARD
